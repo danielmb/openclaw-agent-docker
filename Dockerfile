@@ -41,6 +41,11 @@ ENV NODE_ENV=production
 # Allow non-root user to write temp files at runtime
 RUN chown -R node:node /app
 
+# Provide a global "openclaw" command inside the container.
+# This helps scripts/tools that invoke: openclaw <subcommand>
+RUN printf '#!/bin/sh\nexec node /app/dist/index.js "$@"\n' > /usr/local/bin/openclaw \
+  && chmod +x /usr/local/bin/openclaw
+
 # Run as non-root (node uid 1000) to reduce attack surface
 USER node
 

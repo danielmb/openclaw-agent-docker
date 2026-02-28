@@ -46,6 +46,46 @@ Stop everything:
 docker compose down
 ```
 
+## Make `openclaw` a host alias (so you stop typing docker compose ...)
+
+### PowerShell (current terminal only)
+
+```powershell
+function openclaw { docker compose run --rm openclaw-cli @args }
+```
+
+Now this works:
+
+```powershell
+openclaw status
+openclaw devices list
+openclaw config get gateway.port
+```
+
+### PowerShell (persist forever)
+
+```powershell
+if (!(Test-Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force | Out-Null }
+Add-Content $PROFILE "`nfunction openclaw { docker compose run --rm openclaw-cli @args }"
+. $PROFILE
+```
+
+### Bash / zsh
+
+```bash
+echo 'openclaw(){ docker compose run --rm openclaw-cli "$@"; }' >> ~/.bashrc
+source ~/.bashrc
+```
+
+## Why `openclaw config` failed inside the container
+
+Two common reasons:
+
+1. `openclaw-gateway` is a gateway service container, not an interactive CLI shell.
+2. Some builds had no global `openclaw` binary in `PATH`.
+
+This repo now installs a container-level wrapper at `/usr/local/bin/openclaw` that forwards to `node /app/dist/index.js`, so commands like `openclaw config` work for tools/scripts inside the container image.
+
 ## Prerequisites
 
 - Docker Desktop (or Docker Engine + Compose v2)
